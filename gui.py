@@ -1,5 +1,5 @@
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 from tkinter.filedialog import askopenfile 
 from finance_tools import *
 from pandas import DataFrame
@@ -66,8 +66,19 @@ class Budget_GUI:
         self.cur_clip_board = filedialog.askdirectory()
         self.fold_p_box.insert(0, self.cur_clip_board)
 
+    def add_subframe(self, frame, text, row, column, placement="top", w=400, h=600, position=(0, 0)):
+        # add a subframe to the main frame with placement
+        subframe = Frame(frame, width=w, height=h)
+        subframe.grid(row=row, column=column, padx=10, pady=10)
+        # place the subframe at the bottom left corner
+        subframe.place(relx=position[0], rely=position[1], anchor=CENTER)
+        # add a label to the subframe
+        label = Label(subframe, text=text)
+        label.pack(side="top", fill="x", pady=10)
+        return subframe
+
     def Dashboard(self):
-        self.master.geometry("800x900")
+        self.master.geometry("900x950")
         self.clear_screen()
         self.add_close_button()
         self.add_home_button()
@@ -75,30 +86,49 @@ class Budget_GUI:
         timeline = Timeline_budget()
         timeline.initate_existing_networth(self.init_amount)
         timeline.add_month_pkg(self.folder_path, self.saving_amount)
-        budget_frame = timeline.get_timeline()
-        pie_chart = timeline.get_pie_chart()
+        budget = timeline.get_timeline()
+        #pie_chart = timeline.get_pie_chart()
         stats = timeline.get_stats()
-        print(budget_frame)
-        print(pie_chart)
-        print(stats)
-
-        #convert budget_frame to a tablemodel
-        self.convert_to_table(budget_frame)
-        #convert pie_chart to a tablemodel
         
 
-        
+        # process budget
+        budget_rows = len(budget.index)
+        budget_cols = len(budget.columns)
+        budget_frame = self.add_subframe(self.master,
+                                         "Budget", 
+                                         budget_rows,
+                                         budget_cols,placement="bottom", 
+                                         w=1000, h=550, position=(0.33, 0.77))
+        self.show_dataframe(budget, budget_frame)
+
+        # process pie chart
+
+        # process stats
+        stats_frame = self.add_subframe(self.master,'Stats',
+                                        400, 400, placement="bottom",
+                                        w=400, h=400, position=(0.77, 0.77))
+        self.show_stats(stats, stats_frame)
+
+    def show_stats(self, stats, frame):
+        frame = Frame(frame)
+        frame.pack(expand=True, fill='both')
+        # show string of stats in frame
+        label = Label(frame, text=stats)
+        label.pack(side="top", fill="x", pady=10)
+
     
-    def convert_to_table(self, df):
+    def show_dataframe(self, df: pd.DataFrame, frame):
+        # convert scientific notation to float for every value in dataframe 
+        df = df.applymap(lambda x: '{:,.2f}'.format(x) if isinstance(x, float) else x)
         # frame from self.master
-        frame = Frame(self.master)
-        # increase frame size to fit the table
-        frame.pack(fill=BOTH,expand=1)
+        frame = Frame(frame)
+        # increase frame size to fit the table without scrollbars
+        frame.pack(expand=True, fill='both')
         # create a table
-        self.table = Table(frame, dataframe=df,
-                                showtoolbar=True, showstatusbar=True)
+        self.table = Table(frame, dataframe=df)
         self.table.show()
-                    
+
+
 
     def confirm_input(self):
         # get the folder path and initial amount from the input boxes

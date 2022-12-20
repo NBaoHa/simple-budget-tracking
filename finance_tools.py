@@ -183,16 +183,13 @@ class Timeline_budget:
             Monthly_item = Monthly_finance(month_id, subfolder, saved_amount=savings_permonth)
             self.monthly_records[month_id] = Monthly_item
             self.add_month(Monthly_item.return_values())
+
+    
             
     def get_pie_chart(self):
         # show pie chart representing the  total_bills, total_expenses, percent_savings, remaining_spare from Total_income
         # pie chart
         labels = ['total bills', 'total expenses', 'savings', 'remaining spare']
-        self.total_bills = self.timeline['Total_bills'].sum()
-        self.total_expenses = self.timeline['Total_expenses'].sum()
-        self.total_savings = self.timeline['Net_income'].sum() - self.timeline['remaining_spare'].sum()
-        self.total_spare = self.timeline['remaining_spare'].sum()
-
         sizes = [self.total_bills, 
                 self.total_expenses, 
                 self.total_savings, 
@@ -204,13 +201,15 @@ class Timeline_budget:
         ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
         plt.title('Finance Breakdown')
         
-
-        
         return fig1
 
     def get_stats(self):
         self.total_income = self.timeline['Total_income'].sum()
         self.total_net_income = self.timeline['Net_income'].sum()
+        self.total_bills = self.timeline['Total_bills'].sum()
+        self.total_expenses = self.timeline['Total_expenses'].sum()
+        self.total_savings = self.timeline['Net_income'].sum() - self.timeline['remaining_spare'].sum()
+        self.total_spare = self.timeline['remaining_spare'].sum()
 
         return (f'Total_income: {self.total_income}\n\
             Total_net_income: {self.total_net_income} \n\
@@ -261,11 +260,12 @@ if __name__ == "__main__":
     ## test
     timeline = Timeline_budget()
     timeline.initate_existing_networth(35000)
-    timeline.add_month_pkg('/Users/baoha/Desktop/Automation Script/Budget_Tracking/2023', 1000)
+    timeline.add_month_pkg('/home/bao_wy/Documents/Start_up_dev/Finance_tracking/2023', 1000)
     timeline.add_outsider_funds(300000)
     frame = timeline.get_timeline()
-    chart = timeline.get_pie_chart()
     g = timeline.get_stats()
+    chart = timeline.get_pie_chart()
+    
     print(frame, chart, g)
 
     
