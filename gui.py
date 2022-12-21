@@ -1,11 +1,11 @@
 from tkinter import *
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 from tkinter.filedialog import askopenfile 
 from finance_tools import *
 from pandas import DataFrame
 import pandas as pd
 from pandastable import Table, TableModel
-
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 
 class Budget_GUI:
@@ -27,9 +27,12 @@ class Budget_GUI:
         self.saving_amount_box = None
 
         self.table=None
-        self.home_screen()
+        
 
-    
+    def run(self):
+        self.home_screen()
+        self.master.mainloop()
+
     def add_home_button(self):
         # create a button object with text "Home" placed at the top right corner
         home_button = Button(self.master, text="Home", command=self.home_screen)
@@ -40,11 +43,11 @@ class Budget_GUI:
         close_button = Button(self.master, text="Close", command=self.master.quit)
         close_button.place(relx=0.95, rely=0.03, anchor=CENTER)
 
-    def home_screen(self):
+    def home_screen(self, title: str = "Welcome to Budget Tracking", start_txt: str = "Start Budget Monitoring"):
         # clear all buttons and labels
         self.clear_screen()
         # create a button object with text "Start Budget monitoring" with size 20x3 placed at bottom third of the window
-        start_button = Button(self.master, text="Start Budget Monitoring", font=("Goudy Type", 12),
+        start_button = Button(self.master, text=start_txt, font=("Goudy Type", 12),
         command=self.start_budget_monitoring)
         start_button.place(relx=0.5, rely=0.5, anchor=CENTER)
 
@@ -53,7 +56,7 @@ class Budget_GUI:
         close_button.place(relx=0.95, rely=0.03, anchor=CENTER)
 
         # add a label object with text "Welcom to Budget Tracking" to the window with large Font
-        label = Label(self.master, text="Welcome to Budget Tracking", font=("Goudy Type", 30))
+        label = Label(self.master, text=title, font=("Goudy Type", 30))
         label.place(relx=0.5, rely=0.3, anchor=CENTER)
     
     def clear_screen(self):
@@ -66,39 +69,62 @@ class Budget_GUI:
         self.cur_clip_board = filedialog.askdirectory()
         self.fold_p_box.insert(0, self.cur_clip_board)
 
+
     def Dashboard(self):
-        self.master.geometry("800x900")
+        self.master.geometry("1200x1050")
         self.clear_screen()
         self.add_close_button()
         self.add_home_button()
-
+        
+        # get stats & data
         timeline = Timeline_budget()
         timeline.initate_existing_networth(self.init_amount)
         timeline.add_month_pkg(self.folder_path, self.saving_amount)
-        budget_frame = timeline.get_timeline()
+        budget = timeline.get_timeline()
         pie_chart = timeline.get_pie_chart()
         stats = timeline.get_stats()
-        print(budget_frame)
-        print(pie_chart)
-        print(stats)
 
-        #convert budget_frame to a tablemodel
-        self.convert_to_table(budget_frame)
-        #convert pie_chart to a tablemodel
-        
+        budget_rows = len(budget.index)
+        budget_cols = len(budget.columns)
+
+        # frames
+        top_frame = Frame(self.master)
+        top_frame.pack(side="top", fill="both", expand=True,pady=35)
+        budget_frame = Frame(self.master, width=budget_cols+5, height=budget_rows-5)
+        budget_frame.pack(side="bottom", fill="both", expand=True)
+
+        stats_frame = Frame(budget_frame)
+        stats_frame.pack(side="right", fill="both", expand=True)
 
         
+        # process budget
+        self.show_dataframe(budget, budget_frame)
+
+        # process pie chart
+
+        # process stats
+        self.show_stats(stats, stats_frame)
+
+    def show_stats(self, stats, frame):
+        frame = Frame(frame)
+        frame.pack(expand=True, fill='both')
+        # show string of stats in frame
+        label = Label(frame, text=stats)
+        label.pack(side="top", fill="x", pady=10)
+
     
-    def convert_to_table(self, df):
+    def show_dataframe(self, df: pd.DataFrame, frame):
+        # convert scientific notation to float for every value in dataframe 
+        df = df.applymap(lambda x: '{:,.2f}'.format(x) if isinstance(x, float) else x)
         # frame from self.master
-        frame = Frame(self.master)
-        # increase frame size to fit the table
-        frame.pack(fill=BOTH,expand=1)
+        frame = Frame(frame)
+        # increase frame size to fit the table without scrollbars
+        frame.pack(expand=True, fill='both')
         # create a table
-        self.table = Table(frame, dataframe=df,
-                                showtoolbar=True, showstatusbar=True)
+        self.table = Table(frame, dataframe=df)
         self.table.show()
-                    
+
+
 
     def confirm_input(self):
         # get the folder path and initial amount from the input boxes
@@ -135,7 +161,9 @@ class Budget_GUI:
         print("folder path: ", self.folder_path)
         print("initial amount: ", self.init_amount)
         print("saving amount: ", self.saving_amount)
-        self.Dashboard()     
+        self.Dashboard() 
+
+        
 
     def start_budget_monitoring(self):
         # clear all buttons and labels
@@ -187,50 +215,5 @@ class Budget_GUI:
        
 
        
-
-
-
-
-    
-
-
-if __name__ == '__main__':
-    root = Tk()
-    my_gui = Budget_GUI(root, name_app="Budget Tracking")
-    root.mainloop()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
