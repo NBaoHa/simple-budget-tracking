@@ -25,9 +25,9 @@ class Monthly_finance:
     ''' per month budget object'''
     def __init__(self, Monthlyid: int, files_folder: str, saved_amount: int = 0):
         # parameters table
-        self.members = pd.DataFrame()
-        self.bills = pd.DataFrame()
-        self. Expenses = pd.DataFrame()
+        self.members = pd.DataFrame({'income_name': [], 'income_amount': []})
+        self.bills = pd.DataFrame({'bill_name': [], 'bill_amount': []})
+        self.Expenses = pd.DataFrame({'expense_name': [], 'expense_amount': []})
 
         # output values to return records
         self.Monthlyid = Monthlyid
@@ -39,7 +39,7 @@ class Monthly_finance:
         
 
         # compute output values
-        self.add_members(files_folder + '/members.txt')
+        self.add_members(files_folder + '/incomes.txt')
         self.add_bills(files_folder + '/bills.txt')
         self.add_expenses(files_folder + '/expenses.txt')
         self.calculate_net_income()
@@ -54,7 +54,7 @@ class Monthly_finance:
                                     'Total_expenses': [self.Total_expenses],
                                     'Net_income': [self.Net_income], 
                                     'percent_savings': [self.percent_savings],
-                                    'remaining_spare': [self.Net_income-(self.Net_income * self.percent_savings)]})
+                                    'remaining_spare': [self.Net_income-(self.Net_income * (self.percent_savings/ 100))]})
         
         
         # results
@@ -74,30 +74,30 @@ class Monthly_finance:
             for line in f:
                 name = line.split()[0]
                 income = int(line.split()[1])
-                new_row = pd.Series({'name': name, 'income': income})
+                new_row = pd.Series({'income_name': name, 'income_amount': income})
                 self.members = pd.concat([self.members, new_row.to_frame().T], ignore_index=True)
         
-        self.Total_income = self.members['income'].sum()
+        self.Total_income = self.members['income_amount'].sum()
                 
     def add_bills(self, bills_txtfle):
         with open(bills_txtfle, 'r') as f:
             for line in f:
                 name = line.split()[0]
                 amount = int(line.split()[1])
-                new_row = pd.Series({'name': name, 'amount': amount})
+                new_row = pd.Series({'bill_name': name, 'bill_amount': amount})
                 self.bills = pd.concat([self.bills, new_row.to_frame().T], ignore_index=True)
         
-        self.Total_bills = self.bills['amount'].sum()
+        self.Total_bills = self.bills['bill_amount'].sum()
     
     def add_expenses(self, expenses_txtfle):
         with open(expenses_txtfle, 'r') as f:
             for line in f:
                 name = line.split()[0]
                 amount = int(line.split()[1])
-                new_row = pd.Series({'name': name, 'amount': amount})
+                new_row = pd.Series({'expense_name': name, 'expense_amount': amount})
                 self.Expenses = pd.concat([self.Expenses, new_row.to_frame().T], ignore_index=True)
         
-        self.Total_expenses = self.Expenses['amount'].sum()
+        self.Total_expenses = self.Expenses['expense_amount'].sum()
 
         
     def calculate_net_income(self):
@@ -105,8 +105,11 @@ class Monthly_finance:
         return self.Net_income
 
     def calculate_percent_savings(self, amount_saved):
-        self.percent_savings = amount_saved / self.Net_income
-        return self.percent_savings
+        if self.Net_income == 0:
+            return self.percent_savings
+        else:
+            self.percent_savings = (amount_saved / self.Net_income) * 100
+            return self.percent_savings
     
     def getID(self):
         return self.Monthlyid
@@ -130,14 +133,8 @@ class Monthly_finance:
         else:
             return self.Expenses
 
+  
 
-
-class Asset:
-    def __init__(self):
-        self.TFSA = pd.DataFrame()
-        self.RRSP = pd.DataFrame()
-        self.Savings = pd.DataFrame()
-    
 
 class Timeline_budget:
     def __init__(self):
@@ -168,7 +165,7 @@ class Timeline_budget:
         self.realistic_income_existing += amount
 
     def add_month(self, Monthly_item: pd.DataFrame):
-        new_input = Monthly_item[["Monthlyid", "Total_income", "Net_income", "percent_savings", "remaining_spare"]]
+        #new_input = Monthly_item[["Monthlyid", "Total_income", "Net_income", "percent_savings", "remaining_spare"]]
         self.realistic_income_existing += Monthly_item['Net_income'].values[0]
         self.timeline = pd.merge(self.timeline, Monthly_item, how='outer')
         
@@ -203,9 +200,6 @@ class Timeline_budget:
                 shadow=True, startangle=0)
         ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
         plt.title('Finance Breakdown')
-        
-
-        
         return fig1
 
     def get_stats(self):
@@ -246,27 +240,17 @@ class Timeline_budget:
 
 
 
-class Cam_input:
-    '''Use text recognition to input the data from the picture'''
-    def __init__(self):
-        pass
-
-    def get_text(self, img_path):
-        # get the text from the picture
-        pass
-
-
 
 if __name__ == "__main__":
     ## test
     timeline = Timeline_budget()
     timeline.initate_existing_networth(35000)
     timeline.add_month_pkg('/Users/baoha/Desktop/Automation Script/Budget_Tracking/2023', 1000)
-    timeline.add_outsider_funds(300000)
     frame = timeline.get_timeline()
-    chart = timeline.get_pie_chart()
-    g = timeline.get_stats()
-    print(frame, chart, g)
+    print(frame)
+    # chart = timeline.get_pie_chart()
+    # g = timeline.get_stats()
+    # print(frame, chart, g)
 
     
 
