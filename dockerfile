@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     python3-tk
 
 # Install the required libraries
-RUN pip3 install pandas pandastable matplotlib numpy
+RUN pip3 install pandas pandastable matplotlib numpy xlsxwriter
 
 # Set the working directory
 WORKDIR /app
@@ -16,5 +16,4 @@ WORKDIR /app
 # Copy the current directory into the container
 COPY . .
 
-# Run the app
-CMD ["python3", "app.py"]
+
