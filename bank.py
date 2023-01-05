@@ -113,6 +113,10 @@ class Bank_info:
         # subtract total_bill from account_balance
         self.accounts.loc[self.accounts['account_name'] == account_name, 'account_balance'] -= total_bill
 
+    def on_going_payment(type, account_name, period, Start_Month):
+        pass
+
+
     def add_expenses(self, expenses: Bill, account_name, month):
         ''' store bill and update account balance in accounts'''
         self.expenses[month] = expenses.bill()
@@ -177,11 +181,24 @@ class Bank_info:
                 item_amounts = self.income[month]['income_amount']
                 for item_name, item_amount in zip(names, item_amounts):
                     f.write(f'{item_name} {item_amount}\n')
+
+    def total_Account_balance(self):
+        return format(self.accounts['account_balance'].sum(), '.2f')
+    
+    def total_income(self):
+        return format(self.income['income_amount'].sum(), '.2f')
+    
+    def total_expenses(self):
+        return format(self.expenses['item_amount'].sum(), '.2f')
+
+    def total_bills(self):
+        return format(self.bills['item_amount'].sum(), '.2f')
+    
         
             
 
         
-
+## Debt
         
 
 if __name__ == '__main__':

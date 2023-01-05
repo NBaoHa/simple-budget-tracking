@@ -1,25 +1,16 @@
-import requests
-from bs4 import BeautifulSoup
+import pandas as pd
 
+# create three sample DataFrames
+df1 = pd.DataFrame({'A': [1, 2, 3], 'B': [4, 5, 6]})
+df2 = pd.DataFrame({'C': [7, 8, 9], 'D': [10, 11, 12]})
+df3 = pd.DataFrame({'E': [13, 14, 15], 'F': [16, 17, 18]})
 
-url = 'https://www.investing.com/equities/nike'
-page = requests.get(url)
-#print(page.status_code)
-soup = BeautifulSoup(page.text, 'html.parser')
-print(soup)
+# save each DataFrame to a separate sheet in an Excel spreadsheet
 
+writer = pd.ExcelWriter('/Users/baoha/Desktop/Automation Script/Budget_Tracking/src/ttt.xlsx', engine='xlsxwriter')
 
+df1.to_excel(writer, index=False, sheet_name='Sheet1')
+df2.to_excel(writer, index=False, sheet_name='Sheet2', startrow=0, startcol=0, header=False)
+df3.to_excel(writer, index=False, sheet_name='Sheet3', startrow=0, startcol=0, header=False)
 
-#company = soup.find('h1', {'class': 'text-2xl font-semibold instrument-header_title__gCaMF mobile:mb-2'}).text
-
-# print('Loading: ',page)
-#print(company, price, change)
-
-
-#price = soup.find('div', {'class': 'instrument-price_instrument-price__3uw25 flex items-end flex-wrap font-bold'}).find_all('span')[0].textchange = soup.find('div', {'class': 'instrument-price_instrument-price__3uw25 flex items-end flex-wrap font-bold'}).find_all('span')[2].text
-#company = soup.find('span', {'class': 'text-2xl'}).text
-#price = soup.find('div', {'class': 'instrument-price_instrument-price__3uw25 flex items-end flex-wrap font-bold'}).find_all('span')[0].text
-#change = soup.find('div', {'class': 'instrument-price_instrument-price__3uw25 flex items-end flex-wrap font-bold'}).find_all('span')[2].text
-
-
-#print(f'company: {company}') # \n price: {price} \n change: {change}')
+writer.save()

@@ -1,13 +1,12 @@
-from gui import *
-from Asset import *
-from bank import *
-from finance_tools import *
+from Manage import *
+from Graphical_UI import *
+from tkinter import *
+import pandas as pd
 
 
-# saving sessions...
+## Start new Session
 
-root = Tk()
-my_gui = Budget_GUI(root, name_app="Budget Tracking")
-my_gui.home_screen(title='Welcome to Budget Tracking', start_txt='Start Budget Monitoring')
 
-my_gui.run()
+
+
+## Continue Session
