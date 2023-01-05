@@ -30,6 +30,8 @@ class FinanceTrackerApp():
     - add a timeline tab
     - add accounts tab
     - show properties of bills such as pie charts of selected categories (eg. by month, by account, etc.), same for incomes
+    - Button to update timeline and archive bills/incomes [folder that holds archived bills/incomes]
+    - an option to set a timer for when to update the timeline (automation like monthly, weekly, etc.)
     '''
     def __init__(self, master):
         super().__init__()
@@ -58,16 +60,20 @@ class FinanceTrackerApp():
         self.bill_list = tk.Listbox(self.bill_list_frame, width=74, height=15)
         self.bill_fields = ["Bill", "Account", "Amount", "Month"]
         self.bill_list.pack()
-        self.add_bill_button = tk.Button(self.bill_list_frame, text="Add Bill", command=self.add_bill)
-        self.add_bill_button.pack()
-        self.edit_bill_button = tk.Button(self.bill_list_frame, text="Edit Bill", command=self.edit_bill)
-        self.edit_bill_button.pack()
-        self.delete_bill_button = tk.Button(self.bill_list_frame, text="Delete Bill", command=self.delete_bill)
-        self.delete_bill_button.pack()
-        self.bill_total_label = tk.Label(self.bill_list_frame, text="Total:")
-        self.bill_total_label.pack()
-        self.bill_total = tk.Label(self.bill_list_frame, text="$0")
-        self.bill_total.pack()
+        self.bill_button_frame = tk.Frame(self.bill_list_frame)
+        self.bill_button_frame.pack(side="left", fill="y")
+        self.add_bill_button = tk.Button(self.bill_button_frame, text="Add Bill", command=self.add_bill)
+        self.add_bill_button.grid(row=0, column=0)
+        self.edit_bill_button = tk.Button(self.bill_button_frame, text="Edit Bill", command=self.edit_bill)
+        self.edit_bill_button.grid(row=1, column=0)
+        self.delete_bill_button = tk.Button(self.bill_button_frame, text="Delete Bill", command=self.delete_bill)
+        self.delete_bill_button.grid(row=2, column=0)
+        self.blank_space =tk.Label(self.bill_button_frame, text='')
+        self.blank_space.grid(row=3,column=0)
+        self.bill_total_label = tk.Label(self.bill_button_frame, text="Total:")
+        self.bill_total_label.grid(row=4, column=0)
+        self.bill_total = tk.Label(self.bill_button_frame, text="$0")
+        self.bill_total.grid(row=4, column=1)
     
 
         # create widgets for the Incomes tab
@@ -77,15 +83,33 @@ class FinanceTrackerApp():
         self.income_fields = ["Income", "Account", "Amount", "Month"]
         self.income_list.pack()
         self.add_income_button = tk.Button(self.income_list_frame, text="Add Income", command=self.add_income)
-        self.add_income_button.pack()
+        self.add_income_button.pack(side='left')
         self.edit_income_button = tk.Button(self.income_list_frame, text="Edit Income", command=self.edit_income)
-        self.edit_income_button.pack()
+        self.edit_income_button.pack(side='left')
         self.delete_income_button = tk.Button(self.income_list_frame, text="Delete Income", command=self.delete_income)
-        self.delete_income_button.pack()
+        self.delete_income_button.pack(side='left')
         self.income_total_label = tk.Label(self.income_list_frame, text="Total:")
-        self.income_total_label.pack()
+        self.income_total_label.pack(side='left')
         self.income_total = tk.Label(self.income_list_frame, text="$0")
-        self.income_total.pack()
+        self.income_total.pack(side='left')
+
+
+        # create widgets for the Accounts tab
+        self.account_list_frame = tk.Frame(self.tab3)
+        self.account_list_frame.pack(side="left", fill="y")
+        self.account_list = tk.Listbox(self.account_list_frame, width=74, height=15)
+        self.account_fields = ["Account", "Owner","Bank", "Type", "Balance"]
+        self.account_list.pack()
+        self.add_account_button = tk.Button(self.account_list_frame, text="Add Account", command=self.add_account)
+        self.add_account_button.pack(side='left')
+        self.edit_account_button = tk.Button(self.account_list_frame, text="Edit Account", command=self.edit_account)
+        self.edit_account_button.pack(side='left')
+        self.delete_account_button = tk.Button(self.account_list_frame, text="Delete Account", command=self.delete_account)
+        self.delete_account_button.pack(side='left')
+        self.account_total_label = tk.Label(self.account_list_frame, text="Total:")
+        self.account_total_label.pack(side='left')
+        self.account_total = tk.Label(self.account_list_frame, text="$0")
+        self.account_total.pack(side='left')
 
         # create a menu bar
         self.menu_bar = tk.Menu(self.master)
@@ -118,6 +142,7 @@ class FinanceTrackerApp():
         # update the bill and income lists
         self.update_bill_list()
         self.update_income_list()
+        self.update_account_list()
     
         # saving to file parameters
         self.current_filepath = None
@@ -205,13 +230,78 @@ class FinanceTrackerApp():
         if result:
             self.income_class.remove_income(income_name)
             self.update_income_list()
+
+    def add_account(self):
+        # open a dialog to add a new account
+        acc_name = tk.simpledialog.askstring("Add Account", "Account Name:")
+        if acc_name is not None:
+            owner = tk.simpledialog.askstring("Add Account", "Owner:")
+            bank_name = tk.simpledialog.askstring("Add Account", "Bank Name:")
+            acc_type = tk.simpledialog.askstring("Add Account", "Account Type:")
+            balance = tk.simpledialog.askfloat("Add Account", "Balance:")
+            self.account_class.add_account(acc_name, owner, bank_name, acc_type, balance, '') # purpose left blank
+            self.update_account_list()
+    
+    def edit_account(self):
+        # get the selected account
+        selected_account = self.account_list.curselection()
+        if len(selected_account) == 0:
+            tk.messagebox.showwarning("Edit Account", "No account selected.")
+            return
+        acc_name = self.account_list.get(selected_account)
+        # open a dialog to edit the account
+        new_acc_name = tk.simpledialog.askstring("Edit Account", "Account Name:", initialvalue=acc_name)
+        if new_acc_name is not None:
+            owner = tk.simpledialog.askstring("Edit Account", "Owner:")
+            bank_name = tk.simpledialog.askstring("Edit Account", "Bank Name:")
+            acc_type = tk.simpledialog.askstring("Edit Account", "Account Type:")
+            balance = tk.simpledialog.askfloat("Edit Account", "Balance:")
+            self.account_class.adjust_account(acc_name, 'Account Name', new_acc_name)
+            self.account_class.adjust_account(acc_name, 'Owner', owner)
+            self.account_class.adjust_account(acc_name, 'Bank Name', bank_name)
+            self.account_class.adjust_account(acc_name, 'Account Type', acc_type)
+            self.account_class.adjust_account(acc_name, 'Balance', balance)
+            self.update_account_list()
+    
+    def delete_account(self):
+        # get the selected account
+        selected_account = self.account_list.curselection()
+        if len(selected_account) == 0:
+            tk.messagebox.showwarning("Delete Account", "No account selected.")
+            return
+        acc_name = self.account_list.get(selected_account)
+        # confirm the deletion
+        result = tk.simpledialog.askyesno("Delete Account", f"Are you sure you want to delete {acc_name}?")
+        if result:
+            self.account_class.remove_account(acc_name)
+            self.update_account_list()
+    
+    def update_account_list(self):
+        # clear the list and refill it with the updated account DataFrame
+        self.account_list.delete(0, "end")
+        self.account_list.insert("end",
+            f"{self.account_fields[0].center(30-len(self.account_fields[0]))}|{self.account_fields[1].center(30-len(self.account_fields[1]))}\
+                |{self.account_fields[2].center(30-len(self.account_fields[2]))}|{self.account_fields[3].center(30-len(self.account_fields[3]))}\
+                    |{self.account_fields[4].center(30-len(self.account_fields[4]))}")
+        df = self.account_class.get_accounts()
+        for index, row in df.iterrows():
+            acc_name = row["Account Name"]
+            owner = row["Owner"]
+            bank_name = row["Bank Name"]
+            acc_type = row["Account Type"]
+            balance = "$" + str(row["Balance"])
+            purpose = row["Purpose"]
+            self.account_list.insert("end",
+                f"{acc_name.center(30-len(acc_name))}|{owner.center(30-len(owner))}|{bank_name.center(30-len(bank_name))}\
+                    |{acc_type.center(30-len(acc_type))}|{balance.center(30-len(balance))}|{purpose.center(30-len(purpose))}")
+
     
     def update_bill_list(self):
         # clear the list and refill it with the updated bill DataFrame
         self.bill_list.delete(0, "end")
         self.bill_list.insert("end",
             f"{self.bill_fields[0].center(30-len(self.bill_fields[0]))}|{self.bill_fields[1].center(30-len(self.bill_fields[1]))}\
-                |{self.bill_fields[2].center(30-len(self.bill_fields[2]))}|{self.bill_fields[3].center(30-len(self.bill_fields[3]))}|")
+                |{self.bill_fields[2].center(30-len(self.bill_fields[2]))}|{self.bill_fields[3].center(30-len(self.bill_fields[3]))}")
         df = self.bill_class.get_bills()
         for index, row in df.iterrows():
             bill_name = row["Bill Name"]
@@ -229,14 +319,16 @@ class FinanceTrackerApp():
         self.income_list.delete(0, "end")
         self.income_list.insert("end", 
             f"{self.income_fields[0].center(30-len(self.income_fields[0]))}|{self.income_fields[1].center(30-len(self.income_fields[1]))}\
-                |{self.income_fields[2].center(30-len(self.income_fields[2]))}|{self.income_fields[3].center(30-len(self.income_fields[3]))}|")
+                |{self.income_fields[2].center(30-len(self.income_fields[2]))}|{self.income_fields[3].center(30-len(self.income_fields[3]))}")
         df = self.income_class.get_incomes()
         for index, row in df.iterrows():
             income_name = row["Income Name"]
             acc_name = row["Account Name"]
             amount = "$" + str(row["Amount"])
             month = row["Month"]
-            self.income_list.insert("end", f" {income_name} |    | {acc_name} |    | {amount} |    {NUM_T_MONTH[month]} |")
+            self.income_list.insert("end",
+            f"{income_name.center(30-len(income_name))}|{acc_name.center(30-len(acc_name))}\
+                |{amount.center(30-len(str(amount)))}|{NUM_T_MONTH[month].center(30-len(NUM_T_MONTH[month]))}|")
         self.income_total["text"] = "$" + str(self.income_class.sum_amounts())
     
     def show_bill_context_menu(self, event):
